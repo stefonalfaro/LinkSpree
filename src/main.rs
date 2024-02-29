@@ -1,6 +1,7 @@
 extern crate diesel;
 extern crate dotenv;
 
+
 mod models {
     pub mod group;
     pub mod link;
@@ -17,14 +18,23 @@ use crate::services::link_service::{create_new_link, get_link_by_id, get_links_b
 
 mod helpers {
     pub mod database_manager;
+    pub mod config;
+    pub mod authorization;
 }
 use crate::helpers::database_manager::{establish_connection};
+use crate::helpers::config::{{ load_config, Config}};
+use crate::helpers::authorization::{Authorized};
+
+mod rest {
+    pub mod group_rest;
+    pub mod link_rest;
+}
 
 fn main() {
-    let mut connection = establish_connection();
-    // Now you can use the connection for operations
+    let config = load_config().expect("Failed to load config");
 
-    // Example usage
+    let mut connection = establish_connection();
+
     let group = create_new_group(&mut connection, Some("Example Group"));
     println!("Created new group: {:?}", group);
 
