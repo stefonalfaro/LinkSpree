@@ -10,6 +10,7 @@ diesel::table! {
 diesel::table! {
     link (id) {
         id -> Int4,
+        group_id -> Int4,
         name -> Nullable<Varchar>,
         url -> Nullable<Varchar>,
         color -> Nullable<Varchar>,

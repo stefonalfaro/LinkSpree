@@ -1,47 +1,24 @@
-#[macro_use]
 extern crate diesel;
 extern crate dotenv;
 
-use diesel::prelude::*;
-use dotenv::dotenv;
-use std::env;
-
-mod models; // Ensure this is correct based on your project structure
-mod schema; // Ensure this is correct based on your project structure
-
-use crate::models::{Group, Link, NewGroup, NewLink}; // Adjust if necessary based on your module setup
-use schema::{groups, link}; // Adjust if necessary based on your module setup
-
-fn establish_connection() -> PgConnection {
-    dotenv().ok();
-
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
-    PgConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
+mod models {
+    pub mod group;
+    pub mod link;
 }
 
-fn create_new_group(conn: &mut PgConnection, name: Option<&str>) -> Group {
-    use schema::groups;
+pub mod schema;
 
-    let new_group = NewGroup { name };
-
-    diesel::insert_into(groups::table)
-        .values(&new_group)
-        .get_result(conn)
-        .expect("Error saving new group")
+mod services {
+    pub mod group_service;
+    pub mod link_service;
 }
+use crate::services::group_service::{create_new_group, get_all_groups, get_group_by_id, delete_group_by_id, update_group};
+use crate::services::link_service::{create_new_link, get_link_by_id, get_links_by_group_id, delete_link_by_id, update_link};
 
-fn create_new_link(conn: &mut PgConnection, name: Option<&str>, url: Option<&str>, color: Option<&str>, icon: Option<&str>) -> Link {
-    use schema::link;
-
-    let new_link = NewLink { name, url, color, icon };
-
-    diesel::insert_into(link::table)
-        .values(&new_link)
-        .get_result(conn)
-        .expect("Error saving new link")
+mod helpers {
+    pub mod database_manager;
 }
+use crate::helpers::database_manager::{establish_connection};
 
 fn main() {
     let mut connection = establish_connection();
@@ -51,7 +28,6 @@ fn main() {
     let group = create_new_group(&mut connection, Some("Example Group"));
     println!("Created new group: {:?}", group);
 
-    let link = create_new_link(&mut connection, Some("Example Link"), Some("http://example.com"), Some("blue"), Some("icon.png"));
+    let link = create_new_link(&mut connection, group.id, Some("Example Link"), Some("http://example.com"), Some("blue"), Some("icon.png"));
     println!("Created new link: {:?}", link);
 }
-
